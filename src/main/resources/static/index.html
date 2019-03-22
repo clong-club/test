@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="crypto-js-3.1.9/tripledes.js"></script>
+<script type="text/javascript" src="crypto-js-3.1.9/mode-ecb.js"></script>
+<script type="text/javascript">
+var keyCode = "P@ssw0rd";
+	$(function(){
+		$.ajaxSetup({  
+			type: "POST" ,
+			contentType:"application/x-www-form-urlencoded;charset=utf-8",
+			beforeSend: function() {
+                console.log(arguments);
+                var params = arguments[1].data;
+                var data = '';
+                var m = new Map();
+                if(params!='' && typeof(params)!="undefined"){
+	                for (var key in params) {
+	                    //这两行代码的意思是进行 base64 编码
+	                    //var dataUtf8 = CryptoJS.enc.Utf8.parse(params[key]);
+	                    var keyCode8 = (keyCode+key);
+	                    for(i = 0; i< keyCode8.length%8 ;i++){
+	                    	keyCode8+="1";
+	                    }
+	                    var dataUtf8 = encryptByDES(params[key],keyCode8);
+	                    //var dataBase64 = CryptoJS.enc.Base64.stringify(dataUtf8); 
+	                    //data = data.concat('&' + key + '=' + dataBase64);
+	                    //m.set(key, "111112");
+	                    data = data.concat('&' + key + '='+dataUtf8);
+	                };	
+		                //arguments[1].data = m;//将序列化后的参数重写
+                	
+                }
+		                 arguments[1].data = data.substring(1, data.length);
+		                console.info(arguments[1])
+            },
+                processData: false
+		})
+		$.ajax({
+			url:"ajaxCtrl/list",
+			type:"POST",
+			data:{name:"00000"
+				,pwd:"111111"},
+			dataType:"",
+			success:function(data){
+				console.info(data)
+			}
+		})
+	})
+	
+
+	function encryptByDES(message, key) {
+        var keyHex = CryptoJS.enc.Utf8.parse(key);
+        var encrypted = CryptoJS.DES.encrypt(message, keyHex, {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return encrypted.toString();
+    }
+	function decryptByDES(ciphertext, key) {
+        var keyHex = CryptoJS.enc.Utf8.parse(key);
+        // direct decrypt ciphertext
+        var decrypted = CryptoJS.DES.decrypt({
+            ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
+        }, keyHex, {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
+
+</script>
+</head>
+<body>
+
+</body>
+</html>
